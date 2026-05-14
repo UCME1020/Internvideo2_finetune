@@ -18,8 +18,12 @@ from pathlib import Path
 from decord import VideoReader
 from tqdm import tqdm
 
-ANNO_DIR = Path("/data5/jyhong/BLiM/data/DiDeMo")
-VIDEO_DIR = Path("/data5/jyhong/BLiM/dataset/DiDeMo/DiDeMo")
+ANNO_DIR = Path(os.environ.get(
+    "BLIM_ANNO_DIR", "/data5/jyhong/BLiM/data/DiDeMo"
+))
+VIDEO_DIR = Path(os.environ.get(
+    "BLIM_VIDEO_DIR", "/data5/jyhong/BLiM/dataset/DiDeMo/DiDeMo"
+))
 SPLITS = ("train", "test")
 
 

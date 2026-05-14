@@ -5,7 +5,7 @@ zero-shot-evaluate) **InternVideo2-Stage2-6B** on **DiDeMo** retrieval.
 
 Contents:
 
-```
+```text
 multi_modality/scripts/
 ├── finetuning/stage2/6B/didemo_blim/
 │   ├── config.py             # BLiM fork of upstream didemo/config.py
@@ -22,33 +22,36 @@ data/DiDeMo/
 └── didemo_ret_test_filtered.json
 ```
 
-## Quick start (new server)
+## Quick start
+
+**Full step-by-step guide** lives in
+[`multi_modality/scripts/finetuning/stage2/6B/didemo_blim/NEW_SERVER_SETUP.md`](multi_modality/scripts/finetuning/stage2/6B/didemo_blim/NEW_SERVER_SETUP.md)
+— read that first. The README here only shows the high-level shape.
 
 ```bash
-# 1) Clone this transfer repo
-git clone https://github.com/UCME1020/Internvideo2_finetune.git iv2_blim
-cd iv2_blim
+# 0) Choose paths on this server, then export env vars
+export INTERNVIDEO2_MODEL_PATH=/path/for/pretrained
+export BLIM_ANNO_DIR=/path/for/annotations
+export BLIM_VIDEO_DIR=/path/for/didemo_videos
 
-# 2) Clone upstream InternVideo2 codebase
-git clone --depth=1 https://github.com/OpenGVLab/InternVideo.git _tmp_iv2
-mv _tmp_iv2/InternVideo2 ./InternVideo2_upstream
-rm -rf _tmp_iv2
-
-# 3) Drop our scripts into the upstream tree (paths match exactly)
-cp -r multi_modality/scripts/. InternVideo2_upstream/multi_modality/scripts/
-
-# 4) Place the filtered annotations
-#    config.py defaults to /data5/jyhong/BLiM/data/DiDeMo — either replicate that
-#    layout, or override with env vars (BLIM_ANNO_DIR / BLIM_VIDEO_DIR).
-mkdir -p /data5/jyhong/BLiM/data/DiDeMo
-cp data/DiDeMo/*.json /data5/jyhong/BLiM/data/DiDeMo/
-
-# 5) Transfer DiDeMo videos separately (~61 GB, not in this repo).
-#    See: multi_modality/scripts/finetuning/stage2/6B/didemo_blim/NEW_SERVER_SETUP.md
-
-# 6) Download HF checkpoints + set up conda env + smoke test + full run
-#    Detailed steps: see NEW_SERVER_SETUP.md inside didemo_blim/.
+# 1) Clone this repo + upstream IV2 + drop scripts (see SETUP §0-1)
+# 2) conda env (see SETUP §2)
+# 3) Download HF checkpoints (see SETUP §3 — different sets for FT vs ZS!)
+# 4) DiDeMo videos rsync/download (see SETUP §4, ~61 GB)
+# 5) Smoke (see SETUP §5)         — bash .../didemo_blim/smoke.sh
+# 6) Full finetune (see SETUP §6) — bash .../didemo_blim/run.sh
+# 7) Zero-shot (see SETUP §7)     — bash .../zero_shot/6B/didemo_blim/eval.sh
 ```
 
-Detailed setup (env, checkpoints, video data, smoke, full run) lives in
-[`multi_modality/scripts/finetuning/stage2/6B/didemo_blim/NEW_SERVER_SETUP.md`](multi_modality/scripts/finetuning/stage2/6B/didemo_blim/NEW_SERVER_SETUP.md).
+## Notes for Claude / agent on the new server
+
+- All config paths default to `/data5/jyhong/BLiM/...` (origin server)
+  but are **env-var overridable**: `INTERNVIDEO2_MODEL_PATH`,
+  `BLIM_ANNO_DIR`, `BLIM_VIDEO_DIR`. Set them before launching.
+- Don't try to build `dropout_layer_norm` / `fused_dense` C++ extensions
+  — configs intentionally bypass them via `flag = False`.
+- Finetune and zero-shot need **different** HF checkpoint sets — see
+  SETUP §3a vs §3b.
+- Filtered annotations (1002 entries, 1 broken video dropped) are
+  shipped in `data/DiDeMo/`; you do not need to run prefilter unless
+  you want to re-derive from raw `didemo_ret_*.json`.

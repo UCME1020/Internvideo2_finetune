@@ -17,8 +17,12 @@ _MODEL_PATH = __os.environ.get(
 flag = False
 
 # ========================= data ==========================
-_BLIM_ANNO_DIR = "/data5/jyhong/BLiM/data/DiDeMo"
-_BLIM_VIDEO_DIR = "/data5/jyhong/BLiM/dataset/DiDeMo/DiDeMo"
+_BLIM_ANNO_DIR = __os.environ.get(
+    "BLIM_ANNO_DIR", "/data5/jyhong/BLiM/data/DiDeMo"
+)
+_BLIM_VIDEO_DIR = __os.environ.get(
+    "BLIM_VIDEO_DIR", "/data5/jyhong/BLiM/dataset/DiDeMo/DiDeMo"
+)
 
 # Use filtered annotations (1 broken video removed) — same as Stage2 BLiM run.
 _DIDEMO_TEST = dict(
