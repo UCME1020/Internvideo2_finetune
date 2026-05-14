@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Smoke / training run outputs (timestamped)
+smoke_*/
+logs/
+*.log
+
+# Heavy data placeholders — videos must be transferred separately
+*.mp4
+*.avi
+*.webm
+*.mkv
