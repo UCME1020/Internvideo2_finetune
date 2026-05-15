@@ -137,14 +137,8 @@ You need ~10k `.mp4` files under `${BLIM_VIDEO_DIR}`. Either:
 
 Optional sanity check: `ls "${BLIM_VIDEO_DIR}" | wc -l` should be ~10k.
 
-If you DON'T have access to the filtered JSONs that ship with this repo
-(unlikely — they're at `data/DiDeMo/*.json` in step 1), regenerate:
-
-```bash
-# raw didemo_ret_{train,test}.json must already exist at BLIM_ANNO_DIR
-cd InternVideo2_upstream/multi_modality
-python scripts/finetuning/stage2/6B/didemo_blim/prefilter_didemo.py
-```
+The filtered annotation JSONs ship with this repo at `data/DiDeMo/*.json`
+(step 1) — no regeneration step needed.
 
 ## 5. Smoke test (1 GPU, eval-only, ~10 min)
 
@@ -160,11 +154,11 @@ Success criteria:
 - expect `t2v_r1` ≈ 0.59 (paper zero-shot baseline) — the smoke uses
   the same ckpt as finetune step 0, so result equals zero-shot.
 
-## 6. Full finetune (8 GPUs, ~6h on 8×A100-40GB)
+## 6. Full finetune (4 GPUs, ~6h on 8×A100-40GB)
 
 ```bash
 cd InternVideo2_upstream/multi_modality
-NUM_GPUS=8 bash scripts/finetuning/stage2/6B/didemo_blim/run.sh
+NUM_GPUS=4 bash scripts/finetuning/stage2/6B/didemo_blim/run.sh
 ```
 
 Expected: T2V R@1 (match score) ~68-69 after 5 epochs (paper: ~67-68).
@@ -173,13 +167,13 @@ If you have fewer GPUs:
 - 4×A100: change `deepspeed.stage=2` → `stage=3` in config.py
 - Less than 4: would need much smaller batch, results may degrade
 
-## 7. Zero-shot only (8 GPUs, ~30 min)
+## 7. Zero-shot only (4 GPUs, ~30 min)
 
 ```bash
 cd InternVideo2_upstream/multi_modality
-NUM_GPUS=8 bash scripts/evaluation/clip/zero_shot/6B/didemo_blim/eval.sh
+NUM_GPUS=4 bash scripts/evaluation/clip/zero_shot/6B/didemo_blim/eval.sh
 # or for the "iso" variant (CLIP-style isolated vision, flash_attn ON):
-NUM_GPUS=8 bash scripts/evaluation/clip/zero_shot/6B/didemo_blim_iso/eval.sh
+NUM_GPUS=4 bash scripts/evaluation/clip/zero_shot/6B/didemo_blim_iso/eval.sh
 ```
 
 Expected zero-shot t2v_r1 ≈ 59.
@@ -194,8 +188,9 @@ Expected zero-shot t2v_r1 ≈ 59.
    *separate* `InternVideo2_Stage2_6B.pth` from step 3b — NOT the
    combined `..._with_audio_encoder.pt` from step 3a.
 3. **decord RuntimeError on video N/N**: a broken DiDeMo clip slipped
-   past prefilter. Add its path to a deny list and rerun, or re-run
-   `prefilter_didemo.py`.
+   past the shipped filter. Re-download the clip from Flickr (the
+   filename encodes `{user_id}_{photo_id}_{secret}`) and re-verify with
+   decord, or drop the entry from the filtered JSON.
 4. **OOM during eval**: lower `batch_size_test` in config.py
    (currently 2 for 6B + 7B-text fits 40 GB tight). For 80 GB cards,
    try 8.

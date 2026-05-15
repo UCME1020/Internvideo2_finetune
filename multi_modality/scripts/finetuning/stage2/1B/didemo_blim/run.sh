@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
 set -o pipefail
-# BLiM fork of scripts/finetuning/stage2/6B/didemo/run.sh
-# Run from: /data5/jyhong/BLiM/InternVideo2/multi_modality
-#   bash scripts/finetuning/stage2/6B/didemo_blim/run.sh
+# IV2-1B + DiDeMo finetune launcher (BLiM fork).
+# Run from: <iv2 multi_modality root>
+#   bash scripts/finetuning/stage2/1B/didemo_blim/run.sh
 #
 # Env overrides:
-#   NUM_GPUS=4 bash ...   # use 4 GPUs (matches official RTX4090 ×4 recipe)
-#   CUDA_VISIBLE_DEVICES="0,1,2,3" bash ...   # pin GPUs
+#   NUM_GPUS=8 bash ...        # override from default 4
+#   CUDA_VISIBLE_DEVICES=...   # pin GPUs
 
 export MASTER_PORT=$((12000 + $RANDOM % 20000))
 export OMP_NUM_THREADS=1
 
-# Locations (override via env if needed).
-export INTERNVIDEO2_MODEL_PATH="${INTERNVIDEO2_MODEL_PATH:-/data5/jyhong/BLiM/InternVideo2/multi_modality/pretrained}"
-# INTERNVIDEO2_DATA_PATH unused — data paths are inlined in config.py.
+export INTERNVIDEO2_MODEL_PATH="${INTERNVIDEO2_MODEL_PATH:-/data5/ucjung/PoLaRT/pretrained/iv2_1b}"
 
 which_python=$(which python)
 echo "which python: ${which_python}"
@@ -28,14 +26,9 @@ mkdir -p "${LOG_DIR}"
 NNODE=1
 NUM_GPUS="${NUM_GPUS:-4}"
 
-PRETRAINED_PT="${INTERNVIDEO2_MODEL_PATH}/internvideo2-s2_6b-224p-f4_with_audio_encoder.pt"
+PRETRAINED_PT="${INTERNVIDEO2_MODEL_PATH}/InternVideo2-stage2_1b-224p-f4.pt"
 if [[ ! -f "${PRETRAINED_PT}" ]]; then
     echo "ERROR: pretrained checkpoint not found at ${PRETRAINED_PT}" >&2
-    exit 1
-fi
-BEATS_PT="${INTERNVIDEO2_MODEL_PATH}/BEATs_iter3_plus_AS2M.pt"
-if [[ ! -f "${BEATS_PT}" ]]; then
-    echo "ERROR: BEATs checkpoint not found at ${BEATS_PT}" >&2
     exit 1
 fi
 
@@ -43,14 +36,13 @@ echo "===================================================="
 echo "JOB_NAME       = ${JOB_NAME}"
 echo "NUM_GPUS       = ${NUM_GPUS}"
 echo "PRETRAINED_PT  = ${PRETRAINED_PT}"
-echo "BEATS_PT       = ${BEATS_PT}"
 echo "OUTPUT_DIR     = ${OUTPUT_DIR}"
 echo "===================================================="
 
 torchrun \
     --nnodes=${NNODE} \
     --nproc_per_node=${NUM_GPUS} \
-    --rdzv_id=12345 \
+    --rdzv_id=12346 \
     --rdzv_backend=c10d \
     --rdzv_endpoint=localhost:${MASTER_PORT} \
     tasks/pretrain.py \

@@ -11,15 +11,14 @@ multi_modality/scripts/
 │   ├── config.py             # BLiM fork of upstream didemo/config.py
 │   ├── run.sh                # 8-GPU torchrun launcher
 │   ├── smoke.sh              # 1-GPU eval-only end-to-end smoke
-│   ├── prefilter_didemo.py   # drops unreadable clips, writes *_filtered.json
 │   └── NEW_SERVER_SETUP.md   # full reproduce guide (read this!)
 └── evaluation/clip/zero_shot/6B/
     ├── didemo_blim/          # zero-shot eval (BLIP-style fusion head)
     └── didemo_blim_iso/      # zero-shot eval (CLIP-iso, vision-only)
 
 data/DiDeMo/
-├── didemo_ret_train_filtered.json   # 1002 entries (1 broken video dropped)
-└── didemo_ret_test_filtered.json
+├── didemo_ret_train_filtered.json   # 8381 entries
+└── didemo_ret_test_filtered.json    # 1003 entries
 ```
 
 ## Quick start
