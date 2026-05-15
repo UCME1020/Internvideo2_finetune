@@ -37,7 +37,7 @@ _BLIM_ANNO_DIR = __os.environ.get(
 )
 _BLIM_VIDEO_DIR = __os.environ.get(
     "BLIM_VIDEO_DIR",
-    "/data1/jyhong/workspace/ECCV2026/dataset/DiDeMo/DiDeMo",
+    "/data1/jyhong/workspace/ECCV2026/dataset/DiDeMo/DiDeMo_compress",
 )
 
 train_file = dict(
@@ -61,14 +61,15 @@ test_file = dict(didemo_ret_test=dict(
 test_types = ["didemo_ret_test"]
 num_workers = 6
 
-best_key = ["didemo_ret_test_match", "t2v_r1"]
+best_key = ["didemo_ret_test_match (use_dsl)", "t2v_r1"]
 
 # ========================= input ==========================
-num_frames = 4
-num_frames_test = 4
-batch_size = 8
-batch_size_test = 8
-max_txt_l = 40
+# Aligned with our 1B run that scored 72.46: 8 frames, max_txt_l=64.
+num_frames = 8
+num_frames_test = 8
+batch_size = 8           # 6B + 8 frames is tight in 48 GB A6000 — stay at 8
+batch_size_test = 4
+max_txt_l = 64
 
 inputs = dict(
     image_res=224,
@@ -188,6 +189,7 @@ evaluation = dict(
     eval_x_only=False,
     k_test=128,
     eval_offload=True,
+    use_dsl_for_match=True,   # DSL-normalized cross-encoder rerank
 )
 
 use_half_precision = True

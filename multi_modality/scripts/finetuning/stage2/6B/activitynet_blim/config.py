@@ -18,7 +18,7 @@ _ANNO_DIR = __os.environ.get(
 )
 _VIDEO_DIR = __os.environ.get(
     "BLIM_ANET_VIDEO_DIR",
-    "/data4/dataset/ActivityNet_backup/videos",
+    "/data4/dataset/ActivityNet_backup/videos_compress",
 )
 
 train_file = dict(
