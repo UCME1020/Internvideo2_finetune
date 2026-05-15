@@ -36,7 +36,7 @@ Files you start with:
 iv2_blim/
 ├── README.md
 ├── multi_modality/scripts/         # BLiM-modified configs + launchers
-└── data/DiDeMo/                    # filtered annotations (1002 entries)
+└── data/<DATASET>/                 # annotations (in-repo, canonical)
 ```
 
 ## 1. Clone upstream InternVideo2 codebase
@@ -68,9 +68,12 @@ pip install deepspeed
 pip install flash-attn==2.7.4.post1 --no-build-isolation
 ```
 
-**Do NOT** install `dropout_layer_norm` or `fused_dense` C++ extensions —
-our configs set `flag = False` to avoid them (pure-pytorch fallback).
-Building them on a fresh machine is fragile and unnecessary.
+Our configs now set `flag = True` to use fused ops, so you DO need
+`dropout_layer_norm` and `fused_dense` built from flash-attention
+v2.7.4.post1 source. On the origin server they live in
+`build_flashattn_ext/`; copy the built .so files into your env's
+`site-packages/` (under the matching package names), or rebuild from
+source.
 
 ## 3. Download checkpoints
 
@@ -180,10 +183,11 @@ Expected zero-shot t2v_r1 ≈ 59.
 
 ## Common gotchas
 
-1. **`Module not found: dropout_layer_norm`**: ignore — config has
-   `flag = False` to avoid it. If you see an assert/NameError about
-   `DropoutAddRMSNorm` actually being called, double-check that
-   `use_fused_rmsnorm = False` in your config (it should be).
+1. **`Module not found: dropout_layer_norm` / `fused_dense`**: configs
+   now have `flag = True`, so these C++ extensions must exist. Build
+   them from flash-attention v2.7.4.post1 source (see `build_flashattn_ext/`
+   on the origin server). If you must run without them, flip `flag = False`
+   in your config — it falls back to pure pytorch (slower).
 2. **`Couldn't load ckpt at vision_ckpt_path`**: zero-shot needs the
    *separate* `InternVideo2_Stage2_6B.pth` from step 3b — NOT the
    combined `..._with_audio_encoder.pt` from step 3a.

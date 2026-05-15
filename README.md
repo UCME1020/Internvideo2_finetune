@@ -44,13 +44,18 @@ export BLIM_VIDEO_DIR=/path/for/didemo_videos
 
 ## Notes for Claude / agent on the new server
 
-- All config paths default to `/data5/jyhong/BLiM/...` (origin server)
-  but are **env-var overridable**: `INTERNVIDEO2_MODEL_PATH`,
-  `BLIM_ANNO_DIR`, `BLIM_VIDEO_DIR`. Set them before launching.
-- Don't try to build `dropout_layer_norm` / `fused_dense` C++ extensions
-  — configs intentionally bypass them via `flag = False`.
+- All config paths default to **in-repo locations** (`data/<DATASET>/`)
+  plus the well-known video-archive paths on this server. Override via
+  env vars only if your layout differs: `INTERNVIDEO2_MODEL_PATH`,
+  `BLIM_ANNO_DIR`/`BLIM_VIDEO_DIR` (DiDeMo), `BLIM_ANET_*`,
+  `BLIM_LSMDC_*`, `BLIM_MSRVTT_*`.
+- Configs set `flag = True` to use fused ops (`dropout_layer_norm`,
+  `fused_dense`, `DropoutAddRMSNorm`). These C++ extensions must be
+  built from flash-attention v2.7.4.post1 source (see
+  `build_flashattn_ext/` on the origin server).
 - Finetune and zero-shot need **different** HF checkpoint sets — see
   SETUP §3a vs §3b.
-- Filtered annotations (1002 entries, 1 broken video dropped) are
-  shipped in `data/DiDeMo/`; you do not need to run prefilter unless
-  you want to re-derive from raw `didemo_ret_*.json`.
+- Annotations are shipped under `data/<DATASET>/` and are the canonical
+  artifacts — no separate prefilter step. DiDeMo test is 1003 entries
+  (the one previously-truncated Flickr clip was rescued by
+  re-downloading at 288p).
